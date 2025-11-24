@@ -143,11 +143,7 @@ export class Globe3D {
             .pointsData(pointsData)
             .pointAltitude(0.01)
             .pointColor(d => d.color)
-            .pointRadius(d => d.size)
-            .pointLabel(d => d.label)
-            .onPointClick((point) => {
-                this.onLocationClick && this.onLocationClick(point.location, point.index);
-            });
+            .pointRadius(d => d.size);
 
         // Prepare arcs data for routes
         const arcsData = [];
