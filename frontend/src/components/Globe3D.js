@@ -142,9 +142,9 @@ export class Globe3D {
         this.globe
             .pointsData(pointsData)
             .pointAltitude(0.01)
-            .pointColor('color')
-            .pointRadius('size')
-            .pointLabel('label')
+            .pointColor(d => d.color)
+            .pointRadius(d => d.size)
+            .pointLabel(d => d.label)
             .onPointClick((point) => {
                 this.onLocationClick && this.onLocationClick(point.location, point.index);
             });
@@ -164,7 +164,7 @@ export class Globe3D {
         // Add arcs to globe (initially with low opacity)
         this.globe
             .arcsData(arcsData)
-            .arcColor('color')
+            .arcColor(d => d.color)
             .arcDashLength(0.4)
             .arcDashGap(0.2)
             .arcDashAnimateTime(2000)
