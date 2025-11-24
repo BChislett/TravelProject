@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Travel Journey</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="src/styles/main.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="title">My Travel Journey</h1>
+            <div class="view-toggle">
+                <button id="view-2d" class="toggle-btn active">2D Map</button>
+                <button id="view-3d" class="toggle-btn">3D Globe</button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Visualization Container -->
+            <div class="visualization-container">
+                <!-- 2D Map View -->
+                <div id="map-2d" class="view-panel active"></div>
+
+                <!-- 3D Globe View -->
+                <div id="globe-3d" class="view-panel">
+                    <canvas id="globe-canvas"></canvas>
+                </div>
+
+                <!-- Loading Overlay -->
+                <div id="loading" class="loading-overlay">
+                    <div class="spinner"></div>
+                    <p>Loading your journey...</p>
+                </div>
+            </div>
+
+            <!-- Controls Panel -->
+            <div class="controls-panel">
+                <div class="journey-info">
+                    <h2 id="journey-title">Loading...</h2>
+                    <p id="journey-description"></p>
+                    <div class="stats">
+                        <div class="stat-item">
+                            <span class="stat-value" id="stat-locations">0</span>
+                            <span class="stat-label">Locations</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="stat-countries">0</span>
+                            <span class="stat-label">Countries</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="animation-controls">
+                    <button id="play-btn" class="control-btn" title="Play/Pause">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path id="play-icon" d="M8 5v14l11-7z"/>
+                            <path id="pause-icon" d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" style="display:none;"/>
+                        </svg>
+                    </button>
+                    <div class="progress-container">
+                        <input type="range" id="progress-slider" class="progress-slider" min="0" max="100" value="0">
+                        <div class="progress-labels">
+                            <span id="current-location">Start</span>
+                            <span id="progress-counter">0 / 0</span>
+                        </div>
+                    </div>
+                    <div class="speed-control">
+                        <label for="speed-select">Speed:</label>
+                        <select id="speed-select" class="speed-select">
+                            <option value="0.5">0.5x</option>
+                            <option value="1" selected>1x</option>
+                            <option value="2">2x</option>
+                            <option value="4">4x</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Location Details Sidebar -->
+            <aside id="location-sidebar" class="location-sidebar">
+                <button class="close-btn" id="close-sidebar">&times;</button>
+                <div class="sidebar-content">
+                    <h3 id="location-name">Location Name</h3>
+                    <p class="location-country" id="location-country">Country</p>
+                    <div class="location-dates">
+                        <span id="location-dates">Dates</span>
+                    </div>
+                    <div class="location-notes">
+                        <p id="location-notes">Notes about this location...</p>
+                    </div>
+                    <div class="location-tags" id="location-tags"></div>
+                    <div class="location-photos" id="location-photos">
+                        <!-- Photos will be dynamically added -->
+                    </div>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Three.js -->
+    <script src="https://unpkg.com/three@0.159.0/build/three.min.js"></script>
+
+    <!-- Three Globe -->
+    <script src="https://unpkg.com/three-globe@2.30.0/dist/three-globe.min.js"></script>
+
+    <!-- App Scripts -->
+    <script type="module" src="src/utils/api.js"></script>
+    <script type="module" src="src/components/Map2D.js"></script>
+    <script type="module" src="src/components/Globe3D.js"></script>
+    <script type="module" src="src/components/Controls.js"></script>
+    <script type="module" src="src/main.js"></script>
+</body>
+</html>
