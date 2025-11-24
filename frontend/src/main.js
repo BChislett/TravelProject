@@ -53,19 +53,25 @@ class TravelApp {
 
     async loadData() {
         try {
+            console.log('Fetching journey data...');
             // Fetch journey data
             this.journeyData = await fetchJourney();
+            console.log('Journey data received:', this.journeyData);
             this.locations = this.journeyData.locations || [];
+            console.log('Number of locations:', this.locations.length);
 
             // Update journey info in UI
             document.getElementById('journey-title').textContent = this.journeyData.journey.title;
             document.getElementById('journey-description').textContent = this.journeyData.journey.description;
 
             // Fetch and display stats
+            console.log('Fetching stats...');
             const stats = await fetchStats();
+            console.log('Stats received:', stats);
             document.getElementById('stat-locations').textContent = stats.totalLocations;
             document.getElementById('stat-countries').textContent = stats.totalCountries;
 
+            console.log('Data loaded successfully!');
         } catch (error) {
             console.error('Error loading data:', error);
             throw error;
@@ -73,37 +79,51 @@ class TravelApp {
     }
 
     initializeComponents() {
-        // Initialize 2D Map
-        this.map2D = new Map2D('map-2d');
-        this.map2D
-            .initialize()
-            .loadLocations(this.locations)
-            .setLocationClickHandler((location, index) => {
-                this.showLocationDetails(location);
-                this.controls.seekToLocation(index);
-            });
+        console.log('Starting to initialize components...');
+        console.log('Locations:', this.locations.length);
 
-        // Initialize 3D Globe
-        this.globe3D = new Globe3D('globe-canvas');
-        this.globe3D
-            .initialize()
-            .loadLocations(this.locations)
-            .setLocationClickHandler((location, index) => {
-                this.showLocationDetails(location);
-                this.controls.seekToLocation(index);
-            });
+        try {
+            // Initialize 2D Map
+            console.log('Initializing 2D Map...');
+            this.map2D = new Map2D('map-2d');
+            this.map2D
+                .initialize()
+                .loadLocations(this.locations)
+                .setLocationClickHandler((location, index) => {
+                    this.showLocationDetails(location);
+                    this.controls.seekToLocation(index);
+                });
+            console.log('2D Map initialized successfully');
 
-        // Initialize Controls
-        this.controls = new Controls();
-        this.controls
-            .initialize(this.locations)
-            .setProgressChangeHandler((index) => {
-                this.onProgressChange(index);
-            });
+            // Initialize 3D Globe
+            console.log('Initializing 3D Globe...');
+            this.globe3D = new Globe3D('globe-canvas');
+            this.globe3D
+                .initialize()
+                .loadLocations(this.locations)
+                .setLocationClickHandler((location, index) => {
+                    this.showLocationDetails(location);
+                    this.controls.seekToLocation(index);
+                });
+            console.log('3D Globe initialized successfully');
 
-        // Set initial location
-        if (this.locations.length > 0) {
-            this.onProgressChange(0);
+            // Initialize Controls
+            console.log('Initializing Controls...');
+            this.controls = new Controls();
+            this.controls
+                .initialize(this.locations)
+                .setProgressChangeHandler((index) => {
+                    this.onProgressChange(index);
+                });
+            console.log('Controls initialized successfully');
+
+            // Set initial location
+            if (this.locations.length > 0) {
+                this.onProgressChange(0);
+            }
+        } catch (error) {
+            console.error('Error in initializeComponents:', error);
+            throw error;
         }
     }
 
