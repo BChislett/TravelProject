@@ -89,6 +89,15 @@ def get_stats():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# This catch-all route must be last to avoid interfering with API routes
+@app.route('/<path:path>')
+def serve_static_catchall(path):
+    """Serve static files from frontend folder (catch-all)"""
+    try:
+        return send_from_directory(app.static_folder, path)
+    except:
+        return jsonify({"error": "File not found"}), 404
+
 if __name__ == '__main__':
     # Ensure data and upload directories exist
     os.makedirs(DATA_DIR, exist_ok=True)
