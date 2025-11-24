@@ -46,6 +46,7 @@ export class Controls {
         this.totalLocations = locations.length;
         this.progressSlider.max = locations.length - 1;
         this.updateUI();
+        return this;
     }
 
     togglePlayPause() {
