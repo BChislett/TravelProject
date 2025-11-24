@@ -1,0 +1,31 @@
+{
+  "journey": {
+    "title": "Your Journey Title",
+    "description": "Brief description of your travels",
+    "startDate": "YYYY-MM-DD",
+    "endDate": "YYYY-MM-DD"
+  },
+  "locations": [
+    {
+      "id": "loc-001",
+      "name": "City Name",
+      "country": "Country Name",
+      "coordinates": {
+        "lat": 0.0000,
+        "lng": 0.0000
+      },
+      "arrivalDate": "YYYY-MM-DD",
+      "departureDate": "YYYY-MM-DD",
+      "notes": "Your personal notes and memories about this location...",
+      "photos": [
+        {
+          "filename": "photo-name.jpg",
+          "caption": "Photo description",
+          "timestamp": "YYYY-MM-DDTHH:MM:SSZ"
+        }
+      ],
+      "transportToNext": "train|flight|bus|car|boat|walk",
+      "tags": ["city", "nature", "culture", "adventure", "food"]
+    }
+  ]
+}
