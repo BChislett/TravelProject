@@ -14,9 +14,23 @@ export class Globe3D {
     }
 
     initialize() {
+        console.log('Globe3D initialize called');
+        console.log('THREE available:', typeof THREE !== 'undefined');
+        console.log('ThreeGlobe available:', typeof ThreeGlobe !== 'undefined');
+
+        if (typeof THREE === 'undefined') {
+            throw new Error('THREE.js is not loaded');
+        }
+
+        if (typeof ThreeGlobe === 'undefined') {
+            throw new Error('ThreeGlobe is not loaded');
+        }
+
         const container = this.canvas.parentElement;
         const width = container.clientWidth;
         const height = container.clientHeight;
+
+        console.log('Container dimensions:', width, height);
 
         // Create scene
         this.scene = new THREE.Scene();
@@ -36,6 +50,7 @@ export class Globe3D {
         this.renderer.setPixelRatio(window.devicePixelRatio);
 
         // Create globe using ThreeGlobe
+        console.log('Creating ThreeGlobe instance...');
         this.globe = new ThreeGlobe()
             .globeImageUrl('https://unpkg.com/three-globe@2.30.0/example/img/earth-blue-marble.jpg')
             .bumpImageUrl('https://unpkg.com/three-globe@2.30.0/example/img/earth-topology.png')
