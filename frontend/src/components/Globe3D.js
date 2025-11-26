@@ -83,10 +83,14 @@ export class Globe3D {
     setupMouseControls() {
         let isDragging = false;
         let previousMousePosition = { x: 0, y: 0 };
-        let rotation = { x: 0, y: 0 };
+        this.rotation = { x: 0, y: 0 };
+        this.autoRotate = true;
+        this.isAnimating = false;
 
+        // Mouse drag to rotate
         this.canvas.addEventListener('mousedown', (e) => {
             isDragging = true;
+            this.autoRotate = false; // Disable auto-rotate when user interacts
             previousMousePosition = { x: e.clientX, y: e.clientY };
         });
 
@@ -95,11 +99,14 @@ export class Globe3D {
                 const deltaX = e.clientX - previousMousePosition.x;
                 const deltaY = e.clientY - previousMousePosition.y;
 
-                rotation.y += deltaX * 0.005;
-                rotation.x += deltaY * 0.005;
+                this.rotation.y += deltaX * 0.005;
+                this.rotation.x += deltaY * 0.005;
 
-                this.globe.rotation.y = rotation.y;
-                this.globe.rotation.x = rotation.x;
+                // Clamp x rotation to prevent flipping
+                this.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, this.rotation.x));
+
+                this.globe.rotation.y = this.rotation.y;
+                this.globe.rotation.x = this.rotation.x;
 
                 previousMousePosition = { x: e.clientX, y: e.clientY };
             }
@@ -113,13 +120,25 @@ export class Globe3D {
             isDragging = false;
         });
 
-        // Auto-rotate slowly
-        setInterval(() => {
-            if (!isDragging) {
-                rotation.y += 0.001;
-                this.globe.rotation.y = rotation.y;
-            }
-        }, 16);
+        // Mouse wheel to zoom
+        this.canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const zoomSpeed = 0.1;
+            const delta = e.deltaY > 0 ? 1 : -1;
+            const newZ = this.camera.position.z + (delta * zoomSpeed * this.camera.position.z);
+
+            // Clamp zoom between 150 and 600
+            this.camera.position.z = Math.max(150, Math.min(600, newZ));
+        }, { passive: false });
+    }
+
+    // Method to pause/resume auto-rotation
+    pauseAutoRotation() {
+        this.isAnimating = true;
+    }
+
+    resumeAutoRotation() {
+        this.isAnimating = false;
     }
 
     loadLocations(locations) {
@@ -205,27 +224,35 @@ export class Globe3D {
     }
 
     animateRotation(targetRotation) {
-        const duration = 1000; // 1 second
+        const duration = 1500; // 1.5 seconds for smoother animation
         const startTime = Date.now();
         const startRotation = {
             x: this.globe.rotation.x,
             y: this.globe.rotation.y
         };
 
+        this.pauseAutoRotation(); // Pause auto-rotation during animation
+
         const animate = () => {
             const elapsed = Date.now() - startTime;
             const progress = Math.min(elapsed / duration, 1);
 
-            // Easing function (ease-in-out)
+            // Easing function (ease-in-out cubic for smoother feel)
             const eased = progress < 0.5
-                ? 2 * progress * progress
-                : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+                ? 4 * progress * progress * progress
+                : 1 - Math.pow(-2 * progress + 2, 3) / 2;
 
             this.globe.rotation.x = startRotation.x + (targetRotation.x - startRotation.x) * eased;
             this.globe.rotation.y = startRotation.y + (targetRotation.y - startRotation.y) * eased;
 
+            // Update rotation state
+            this.rotation.x = this.globe.rotation.x;
+            this.rotation.y = this.globe.rotation.y;
+
             if (progress < 1) {
                 requestAnimationFrame(animate);
+            } else {
+                this.resumeAutoRotation(); // Resume auto-rotation after animation
             }
         };
 
