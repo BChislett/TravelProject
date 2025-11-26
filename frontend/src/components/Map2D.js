@@ -8,6 +8,35 @@ export class Map2D {
         this.locations = [];
         this.currentIndex = 0;
         this.animationLine = null;
+        this.vehicleMarker = null;
+        this.vehicleAnimationFrame = null;
+    }
+
+    // Get vehicle icon based on transport type
+    getVehicleIcon(transportType) {
+        const icons = {
+            'flight': '✈️',
+            'train': '🚂',
+            'car': '🚗',
+            'bus': '🚌',
+            'boat': '⛵',
+            'walk': '🚶',
+            'bike': '🚴'
+        };
+        return icons[transportType] || '📍';
+    }
+
+    // Create custom vehicle marker
+    createVehicleMarker(lat, lng, transportType) {
+        const icon = this.getVehicleIcon(transportType);
+        const vehicleIcon = L.divIcon({
+            className: 'vehicle-marker',
+            html: `<div style="font-size: 24px; text-shadow: 0 0 3px #fff; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">${icon}</div>`,
+            iconSize: [32, 32],
+            iconAnchor: [16, 16]
+        });
+
+        return L.marker([lat, lng], { icon: vehicleIcon });
     }
 
     initialize() {
@@ -133,11 +162,82 @@ export class Map2D {
             }
         });
 
+        // Animate vehicle if moving from previous location
+        if (index > 0) {
+            const prevLocation = this.locations[index - 1];
+            const transportType = prevLocation.transportToNext;
+            this.animateVehicle(prevLocation, location, transportType);
+        } else {
+            // Remove vehicle marker if going back to start
+            if (this.vehicleMarker) {
+                this.map.removeLayer(this.vehicleMarker);
+                this.vehicleMarker = null;
+            }
+        }
+
         // Pan to location
         this.map.panTo([location.coordinates.lat, location.coordinates.lng], {
             animate: true,
             duration: 1
         });
+    }
+
+    // Animate vehicle marker between two locations
+    animateVehicle(fromLocation, toLocation, transportType) {
+        // Remove existing vehicle marker
+        if (this.vehicleMarker) {
+            this.map.removeLayer(this.vehicleMarker);
+        }
+
+        // Cancel any ongoing animation
+        if (this.vehicleAnimationFrame) {
+            cancelAnimationFrame(this.vehicleAnimationFrame);
+        }
+
+        const startLat = fromLocation.coordinates.lat;
+        const startLng = fromLocation.coordinates.lng;
+        const endLat = toLocation.coordinates.lat;
+        const endLng = toLocation.coordinates.lng;
+
+        const duration = 1500; // 1.5 seconds
+        const startTime = Date.now();
+
+        const animate = () => {
+            const elapsed = Date.now() - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+
+            // Easing function (ease-in-out)
+            const eased = progress < 0.5
+                ? 2 * progress * progress
+                : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+
+            // Calculate current position
+            const currentLat = startLat + (endLat - startLat) * eased;
+            const currentLng = startLng + (endLng - startLng) * eased;
+
+            // Update vehicle marker position
+            if (this.vehicleMarker) {
+                this.vehicleMarker.setLatLng([currentLat, currentLng]);
+            } else {
+                this.vehicleMarker = this.createVehicleMarker(currentLat, currentLng, transportType);
+                this.vehicleMarker.addTo(this.map);
+            }
+
+            // Continue animation or clean up
+            if (progress < 1) {
+                this.vehicleAnimationFrame = requestAnimationFrame(animate);
+            } else {
+                // Keep vehicle at destination for a moment, then remove
+                setTimeout(() => {
+                    if (this.vehicleMarker) {
+                        this.map.removeLayer(this.vehicleMarker);
+                        this.vehicleMarker = null;
+                    }
+                }, 500);
+            }
+        };
+
+        animate();
     }
 
     highlightLocation(index) {
