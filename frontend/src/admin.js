@@ -4,6 +4,7 @@ const API_BASE_URL = 'http://localhost:5000/api';
 class AdminApp {
     constructor() {
         this.uploadedPhotos = [];
+        this.autocompleteTimeout = null;
         this.init();
     }
 
@@ -17,6 +18,36 @@ class AdminApp {
         document.getElementById('location-form').addEventListener('submit', (e) => {
             e.preventDefault();
             this.handleSubmit();
+        });
+
+        // Location autocomplete
+        const nameInput = document.getElementById('name');
+        const autocompleteDropdown = document.getElementById('autocomplete-dropdown');
+
+        nameInput.addEventListener('input', (e) => {
+            const query = e.target.value.trim();
+
+            // Clear previous timeout
+            if (this.autocompleteTimeout) {
+                clearTimeout(this.autocompleteTimeout);
+            }
+
+            if (query.length < 3) {
+                autocompleteDropdown.classList.remove('show');
+                return;
+            }
+
+            // Debounce API calls
+            this.autocompleteTimeout = setTimeout(() => {
+                this.searchLocation(query);
+            }, 300);
+        });
+
+        // Hide dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.autocomplete-container')) {
+                autocompleteDropdown.classList.remove('show');
+            }
         });
 
         // Photo upload area
@@ -186,6 +217,78 @@ class AdminApp {
         } catch (error) {
             this.showError('Failed to delete location: ' + error.message);
         }
+    }
+
+    async searchLocation(query) {
+        try {
+            // Use Nominatim (OpenStreetMap) geocoding API
+            const response = await fetch(
+                `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=5&addressdetails=1`,
+                {
+                    headers: {
+                        'User-Agent': 'TravelJourneyApp/1.0'
+                    }
+                }
+            );
+
+            if (!response.ok) throw new Error('Geocoding failed');
+
+            const results = await response.json();
+            this.displayAutocompleteResults(results);
+
+        } catch (error) {
+            console.error('Autocomplete error:', error);
+        }
+    }
+
+    displayAutocompleteResults(results) {
+        const dropdown = document.getElementById('autocomplete-dropdown');
+
+        if (results.length === 0) {
+            dropdown.innerHTML = '<div class="autocomplete-item">No locations found</div>';
+            dropdown.classList.add('show');
+            return;
+        }
+
+        dropdown.innerHTML = results.map(result => {
+            const displayName = result.display_name;
+            const country = result.address?.country || 'Unknown';
+            const city = result.address?.city || result.address?.town || result.address?.village || result.name;
+
+            return `
+                <div class="autocomplete-item" data-result='${JSON.stringify({
+                    name: city,
+                    country: country,
+                    lat: result.lat,
+                    lng: result.lon,
+                    display: displayName
+                })}'>
+                    <div class="location-name">${city}</div>
+                    <div class="location-details">${displayName}</div>
+                </div>
+            `;
+        }).join('');
+
+        // Add click handlers
+        dropdown.querySelectorAll('.autocomplete-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const data = JSON.parse(item.dataset.result);
+                this.selectLocation(data);
+            });
+        });
+
+        dropdown.classList.add('show');
+    }
+
+    selectLocation(data) {
+        // Fill in the form fields
+        document.getElementById('name').value = data.name;
+        document.getElementById('country').value = data.country;
+        document.getElementById('lat').value = parseFloat(data.lat).toFixed(6);
+        document.getElementById('lng').value = parseFloat(data.lng).toFixed(6);
+
+        // Hide dropdown
+        document.getElementById('autocomplete-dropdown').classList.remove('show');
     }
 
     showSuccess(message) {
