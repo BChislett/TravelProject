@@ -195,10 +195,18 @@ class AdminApp {
                     <p>${loc.notes ? loc.notes.substring(0, 100) + '...' : 'No notes'}</p>
                 </div>
                 <div class="location-actions">
-                    <button class="btn btn-danger" onclick="adminApp.deleteLocation('${loc.id}')">Delete</button>
+                    <button class="btn btn-danger delete-location-btn" data-location-id="${loc.id}">Delete</button>
                 </div>
             </div>
         `).join('');
+
+        // Attach event listeners to delete buttons
+        container.querySelectorAll('.delete-location-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const locationId = btn.dataset.locationId;
+                this.deleteLocation(locationId);
+            });
+        });
     }
 
     async deleteLocation(locationId) {
